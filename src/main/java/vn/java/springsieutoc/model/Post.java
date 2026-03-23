@@ -63,4 +63,14 @@ public  class Post {
         this.user = user;
     }
 
+
+    @PreUpdate
+    public void beforeUpdate() {
+        this.updatedAt = Instant.now();
+        User user = new User();
+        Integer id = SecurityUtil.getCurrentIdLogin().get();
+
+        user.setId(id);
+        this.user = user;
+    }
 }

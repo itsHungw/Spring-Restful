@@ -7,6 +7,7 @@ import java.time.Instant;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import vn.java.springsieutoc.helper.SecurityUtil;
 
 @Builder
 @Getter
@@ -38,4 +39,23 @@ public class Comment {
     @JoinColumn(name = "post_id")
     private Post post;
 
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+
+        User currentUser = new  User();
+        currentUser.setId(SecurityUtil.getCurrentIdLogin().get());
+        this.user = currentUser;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = Instant.now();
+
+        User currentUser = new  User();
+        currentUser.setId(SecurityUtil.getCurrentIdLogin().get());
+        this.user = currentUser;
+    }
 }

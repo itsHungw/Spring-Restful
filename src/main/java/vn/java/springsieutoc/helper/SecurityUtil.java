@@ -53,7 +53,7 @@ public class SecurityUtil {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof Jwt jwt) {
-            String idClaim = jwt.getClaimAsString("id");
+            String idClaim = jwt.getClaimAsString("userId");
             if (idClaim == null) {
                 return Optional.empty();
             }
