@@ -70,8 +70,10 @@ public class CommentService {
 
         Comment outputComment = this.commentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Comment not found!"));
         outputComment.setContent(inputComment.getContent());
+
 //        outputComment.setUser(outputComment.getUser());
 //        outputComment.setPost(outputComment.getPost());
+
         outputComment.setApproved(inputComment.isApproved());
         outputComment.setCreatedAt(inputComment.getCreatedAt());
         outputComment.setUpdatedAt(inputComment.getUpdatedAt());

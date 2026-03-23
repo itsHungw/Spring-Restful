@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -41,6 +42,7 @@ public class UserController {
 
 
     @GetMapping
+//    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers(@RequestParam(required = false) String role) {
         List<UserResponseDTO> users = this.userService.fetchUsers(role);
         return ApiResponse.success(users, "Successfully retrieved all users");

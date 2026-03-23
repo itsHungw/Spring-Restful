@@ -8,6 +8,7 @@ import java.util.List;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import vn.java.springsieutoc.helper.SecurityUtil;
 
 @Builder
 @Getter
@@ -47,5 +48,19 @@ public  class Post {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private List<Tag> tags;
+
+
+
+    @PrePersist
+    public void beforeCreate() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+
+        User user = new User();
+        Integer id = SecurityUtil.getCurrentIdLogin().get();
+
+        user.setId(id);
+        this.user = user;
+    }
 
 }

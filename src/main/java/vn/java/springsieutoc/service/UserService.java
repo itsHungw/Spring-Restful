@@ -124,11 +124,7 @@ public class UserService {
         this.userRepository.deleteById(id);
     }
 
-    public void testJPA() {
-        System.out.println("call jpa");
-//		Optional<User> userOpt = this.userRepository.findByName("eric1");
-        Optional<User> userOpt = this.userRepository.findByNameAndEmail("eric1", "hoidanit@example.com2");
-
-        System.out.println(userOpt.get());
+    public User findUserByEmail(String email) {
+        return this.userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }
