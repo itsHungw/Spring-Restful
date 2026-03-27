@@ -94,7 +94,8 @@ public class SecurityConfiguration {
         String[] WHITELIST = {
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
-                "/swagger-ui.html"
+                "/swagger-ui.html",
+                "/auth/login",
         };
 
         http.authorizeHttpRequests(
