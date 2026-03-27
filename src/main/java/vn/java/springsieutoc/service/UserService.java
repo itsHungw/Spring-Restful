@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,9 +30,11 @@ import vn.java.springsieutoc.helper.exception.ResourceNotFoundException;
 import vn.java.springsieutoc.model.Role;
 import vn.java.springsieutoc.model.User;
 import vn.java.springsieutoc.model.dto.RoleResponseDTO;
+import vn.java.springsieutoc.model.dto.UserRequestFilterDTO;
 import vn.java.springsieutoc.model.dto.UserResponseDTO;
 import vn.java.springsieutoc.repository.RoleRepository;
 import vn.java.springsieutoc.repository.UserRepository;
+import vn.java.springsieutoc.service.specification.UserSpecification;
 
 @Service
 @RequiredArgsConstructor
@@ -63,19 +68,17 @@ public class UserService {
                 build();
     }
 
-    public List<UserResponseDTO> fetchUsers(String roleName) {
-        List<UserResponseDTO> userList = new ArrayList<>();
-        if (roleName == null) {
-            userList = this.userRepository.findAll().stream().map(user -> transformToDTO(user)).collect(Collectors.toList());
-        }else userList = this.userRepository.findAllByRole_Name(roleName).stream().map(user -> transformToDTO(user)).collect(Collectors.toList());
+    public Page<UserResponseDTO> fetchUsers(Pageable pageable, UserRequestFilterDTO filter) {
+        Page<UserResponseDTO> userList = null;
 
-//                UserResponseDTO.builder().
-//                id(user.getId()).
-//                name(user.getName()).
-//                email(user.getEmail()).
-//                role(new RoleResponseDTO(user.getRole().getId(),  user.getRole().getName())).
-//                address(user.getAddress()).
-//                build()).collect(Collectors.toList());
+        System.out.println(filter);
+        Specification<User> spec = Specification.allOf(
+                UserSpecification.hasName(filter),
+                UserSpecification.hasEmail(filter),
+                UserSpecification.hasAddress(filter),
+                UserSpecification.hasRole(filter));
+         userList = this.userRepository.findAll(spec, pageable).map(user -> transformToDTO(user));
+
 
         return userList;
     }

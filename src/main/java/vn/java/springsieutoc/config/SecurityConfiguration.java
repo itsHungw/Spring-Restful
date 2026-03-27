@@ -35,7 +35,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class SecurityConfiguration {
 
-
     @Value("${spring.jwt.base64-secret}")
     private String jwtKey;
 
@@ -50,12 +49,12 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider dao = new DaoAuthenticationProvider(userDetailsService);
         dao.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(dao);
     }
-
 
     @Bean
     JwtEncoder jwtEncoder() {
@@ -80,36 +79,39 @@ public class SecurityConfiguration {
         return converter;
     }
 
-
     private SecretKey getSecretKey() {
         byte[] keyBytes = Base64.from(jwtKey).decode();
-//        byte[] keyBytes = jwtKey.getBytes(StandardCharsets.UTF_8);
+        // byte[] keyBytes = jwtKey.getBytes(StandardCharsets.UTF_8);
         return new SecretKeySpec(keyBytes, 0, keyBytes.length,
                 JwtService.JWT_ALGORITHM.getName());
     }
 
-
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http,
-                                    CustomAccessDeniedHandler customAccessDeniedHandler,
-                                    CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+            CustomAccessDeniedHandler customAccessDeniedHandler,
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
 
-        http.authorizeHttpRequests((request)
-                -> request.requestMatchers("auth/login", "auth/refresh", "/auth/refresh-cookies")
-                .permitAll()
-                .requestMatchers("/users").hasRole("ADMIN")
-                .anyRequest()
-                .authenticated());
+        String[] WHITELIST = {
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html"
+        };
+
+        http.authorizeHttpRequests(
+                (request) -> request.requestMatchers(WHITELIST)
+                        .permitAll()
+                        .requestMatchers("/users").hasRole("ADMIN")
+                        .anyRequest()
+                        .authenticated());
 
         http.csrf(c -> c.disable());
 
         http.formLogin(form -> form.disable());
 
-        http.oauth2ResourceServer(oauth2 ->
-                oauth2
-                        .accessDeniedHandler(customAccessDeniedHandler)
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+        http.oauth2ResourceServer(oauth2 -> oauth2
+                .accessDeniedHandler(customAccessDeniedHandler)
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
         http.sessionManagement(
                 sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

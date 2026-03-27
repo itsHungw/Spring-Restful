@@ -10,16 +10,14 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-
 @Getter
 @Setter
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class CommentRequestDTO {
 
-    @NotBlank(message = "content không được để trống")
+    // @NotBlank(message = "content không được để trống")
     private String content;
-
 
     @Valid
     @NotNull(message = "user không được để trống")
@@ -28,7 +26,6 @@ public class CommentRequestDTO {
     @Valid
     @NotNull(message = "post không được để trống")
     private InputPost post;
-
 
     private boolean isApproved = false;
 
@@ -40,7 +37,7 @@ public class CommentRequestDTO {
     @Setter
     @RequiredArgsConstructor
     @AllArgsConstructor
-    public static class InputUser{
+    public static class InputUser {
 
         @NotNull(message = "id user ko dc de trong")
         private int id;
@@ -50,7 +47,7 @@ public class CommentRequestDTO {
     @Setter
     @RequiredArgsConstructor
     @AllArgsConstructor
-    public static class InputPost{
+    public static class InputPost {
 
         @NotNull(message = "id post ko dc de trong")
         private Long id;

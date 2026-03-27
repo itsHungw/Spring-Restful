@@ -1,18 +1,20 @@
 package vn.java.springsieutoc.service;
 
-
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.java.springsieutoc.helper.exception.ResourceNotFoundException;
 import vn.java.springsieutoc.model.Comment;
 import vn.java.springsieutoc.model.dto.CommentRequestDTO;
+import vn.java.springsieutoc.model.dto.CommentRequestFilterDTO;
 import vn.java.springsieutoc.model.dto.CommentResponseDTO;
 import vn.java.springsieutoc.repository.CommentRepository;
 import vn.java.springsieutoc.repository.PostRepository;
 import vn.java.springsieutoc.repository.UserRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import vn.java.springsieutoc.service.specification.CommentSpecification;
 
 @Service
 @RequiredArgsConstructor
@@ -37,29 +39,31 @@ public class CommentService {
     public Comment convertToComment(CommentRequestDTO commentRequestDTO) {
         return Comment.builder()
                 .content(commentRequestDTO.getContent())
-                .user(this.userRepository.findById(commentRequestDTO.getUser().getId()).orElseThrow(() -> new ResourceNotFoundException("User not found!")))
-                .post(this.postRepository.findById(commentRequestDTO.getPost().getId()).orElseThrow(() -> new ResourceNotFoundException("post not found")))
+                .user(this.userRepository.findById(commentRequestDTO.getUser().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found!")))
+                .post(this.postRepository.findById(commentRequestDTO.getPost().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("post not found")))
                 .isApproved(commentRequestDTO.isApproved())
                 .createdAt(commentRequestDTO.getCreatedAt())
                 .updatedAt(commentRequestDTO.getUpdatedAt())
                 .build();
     }
 
-    public List<CommentResponseDTO> getAllComment(Long postId, Integer userId) {
-        if (postId == null && userId == null) {
-            return this.commentRepository.findAll().stream().map(comment -> convertToCommentResponseDTO(comment)).collect(Collectors.toList());
-        }
-        if (postId != null && userId == null) {
-            return this.commentRepository.findByPost_Id(postId).stream().map(comment -> convertToCommentResponseDTO(comment)).collect(Collectors.toList());
-        }
-        if (postId == null && userId != null) {
-            return this.commentRepository.findByUser_Id(userId).stream().map(comment -> convertToCommentResponseDTO(comment)).collect(Collectors.toList());
-        }else
-            return this.commentRepository.findByPost_IdAndUser_Id(postId, userId).stream().map(comment -> convertToCommentResponseDTO(comment)).collect(Collectors.toList());
+    public Page<CommentResponseDTO> getAllComment(CommentRequestFilterDTO filter, Pageable pageable) {
+        Specification<Comment> specification = Specification.allOf(
+                CommentSpecification.hasUserId(filter),
+                CommentSpecification.hasPostId(filter),
+                CommentSpecification.hasIsApproved(filter));
+        // CommentSpecification.hasCreatedAt(filter),
+        // CommentSpecification.hasUpdatedAt(filter));
+        Page<Comment> comments = this.commentRepository.findAll(specification, pageable);
+
+        return comments.map(comment -> convertToCommentResponseDTO(comment));
     }
 
     public CommentResponseDTO getComment(Long id) {
-        return this.commentRepository.findById(id).map(comment -> convertToCommentResponseDTO(comment)).orElseThrow(() -> new ResourceNotFoundException("Comment not found!"));
+        return this.commentRepository.findById(id).map(comment -> convertToCommentResponseDTO(comment))
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found!"));
     }
 
     public CommentResponseDTO createComment(CommentRequestDTO inputComment) {
@@ -68,15 +72,19 @@ public class CommentService {
 
     public CommentResponseDTO updateComment(Long id, CommentRequestDTO inputComment) {
 
-        Comment outputComment = this.commentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Comment not found!"));
-        outputComment.setContent(inputComment.getContent());
+        Comment outputComment = this.commentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found!"));
 
-//        outputComment.setUser(outputComment.getUser());
-//        outputComment.setPost(outputComment.getPost());
+        if (inputComment.getContent() != null) {
+            outputComment.setContent(inputComment.getContent());
+        }
+
+        // outputComment.setUser(outputComment.getUser());
+        // outputComment.setPost(outputComment.getPost());
 
         outputComment.setApproved(inputComment.isApproved());
-        outputComment.setCreatedAt(inputComment.getCreatedAt());
-        outputComment.setUpdatedAt(inputComment.getUpdatedAt());
+        // outputComment.setCreatedAt(inputComment.getCreatedAt());
+        // outputComment.setUpdatedAt(inputComment.getUpdatedAt());
         return convertToCommentResponseDTO(this.commentRepository.save(outputComment));
     }
 
@@ -84,4 +92,5 @@ public class CommentService {
         getComment(id);
         this.commentRepository.deleteById(id);
     }
+
 }
