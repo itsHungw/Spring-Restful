@@ -4,6 +4,10 @@ package vn.java.springsieutoc.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -22,4 +26,8 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     Optional<User> findByEmail(String email);
 
     List<User> findAllByRole_Name(String name);
+
+    @EntityGraph(attributePaths = "role") //define table de join
+    Page<User> findAll(Specification<User> specs, Pageable pageable); //toi uu phan query N + 1
+
 }

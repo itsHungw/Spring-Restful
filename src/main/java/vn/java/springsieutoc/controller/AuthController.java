@@ -4,6 +4,7 @@ package vn.java.springsieutoc.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import vn.java.springsieutoc.service.UserService;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final UserService userService;
@@ -67,6 +69,10 @@ public class AuthController {
                 .build();
 
         ApiResponse<LoginResponseDTO> finalData = new ApiResponse<>(HttpStatus.OK, "", res,  "");
+//        log.debug("Create user request: username={}, email={}",
+//                res.getUsername(),
+//                requestDto.getEmail());
+
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(finalData); //gan them header
     }
