@@ -18,6 +18,12 @@ import vn.java.springsieutoc.helper.SecurityUtil;
 @Entity
 @Table(name = "posts")
 public  class Post {
+    public Post(String title, String content, User user) {
+        this.title = title;
+        this.content = content;
+        this.user = user;
+    }
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,21 +62,20 @@ public  class Post {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
 
-        User user = new User();
-        Integer id = SecurityUtil.getCurrentIdLogin().get();
-
-        user.setId(id);
-        this.user = user;
+        SecurityUtil.getCurrentIdLogin().ifPresent(id -> {
+            User user = new User();
+            user.setId(id);
+            this.user = user;
+        });
     }
-
 
     @PreUpdate
     public void beforeUpdate() {
         this.updatedAt = Instant.now();
-        User user = new User();
-        Integer id = SecurityUtil.getCurrentIdLogin().get();
-
-        user.setId(id);
-        this.user = user;
+        SecurityUtil.getCurrentIdLogin().ifPresent(id -> {
+            User user = new User();
+            user.setId(id);
+            this.user = user;
+        });
     }
 }

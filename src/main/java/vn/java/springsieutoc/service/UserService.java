@@ -29,6 +29,7 @@ import vn.java.springsieutoc.helper.exception.ResourceAlreadyExistException;
 import vn.java.springsieutoc.helper.exception.ResourceNotFoundException;
 import vn.java.springsieutoc.model.Role;
 import vn.java.springsieutoc.model.User;
+import vn.java.springsieutoc.model.dto.RegisterRequestDTO;
 import vn.java.springsieutoc.model.dto.RoleResponseDTO;
 import vn.java.springsieutoc.model.dto.UserRequestFilterDTO;
 import vn.java.springsieutoc.model.dto.UserResponseDTO;
@@ -45,27 +46,22 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
-//	public UserService(UserRepository userRepository,  PasswordEncoder passwordEncoder) {
-//		this.userRepository = userRepository;
-//        this.passwordEncoder = passwordEncoder;
-//	}
-
+    // public UserService(UserRepository userRepository, PasswordEncoder
+    // passwordEncoder) {
+    // this.userRepository = userRepository;
+    // this.passwordEncoder = passwordEncoder;
+    // }
 
     public UserResponseDTO transformToDTO(User user) {
-//        UserResponseDTO userResponseDTO = new UserResponseDTO();
-//        userResponseDTO.setId(user.getId());
-//        userResponseDTO.setName(user.getName());
-//        userResponseDTO.setEmail(user.getEmail());
-//        userResponseDTO.setRole(user.getRole());
+        // UserResponseDTO userResponseDTO = new UserResponseDTO();
+        // userResponseDTO.setId(user.getId());
+        // userResponseDTO.setName(user.getName());
+        // userResponseDTO.setEmail(user.getEmail());
+        // userResponseDTO.setRole(user.getRole());
 
-
-        return UserResponseDTO.builder().
-                id(user.getId()).
-                name(user.getName()).
-                email(user.getEmail()).
-                role(new RoleResponseDTO(user.getRole().getId(), user.getRole().getName())).
-                address(user.getAddress()).
-                build();
+        return UserResponseDTO.builder().id(user.getId()).name(user.getName()).email(user.getEmail())
+                .role(new RoleResponseDTO(user.getRole().getId(), user.getRole().getName())).address(user.getAddress())
+                .build();
     }
 
     public Page<UserResponseDTO> fetchUsers(Pageable pageable, UserRequestFilterDTO filter) {
@@ -77,8 +73,7 @@ public class UserService {
                 UserSpecification.hasEmail(filter),
                 UserSpecification.hasAddress(filter),
                 UserSpecification.hasRole(filter));
-         userList = this.userRepository.findAll(spec, pageable).map(user -> transformToDTO(user));
-
+        userList = this.userRepository.findAll(spec, pageable).map(user -> transformToDTO(user));
 
         return userList;
     }
@@ -90,13 +85,13 @@ public class UserService {
         String hashedPassword = this.passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
 
-        Role roleInDB = this.roleRepository.findRoleByNameOrId(user.getRole().getName(), user.getRole().getId()).orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+        Role roleInDB = this.roleRepository.findRoleByNameOrId(user.getRole().getName(), user.getRole().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
         user.setRole(roleInDB);
         this.userRepository.save(user);
 
         return transformToDTO(user);
     }
-
 
     public User findUserById(int id) {
 
@@ -123,11 +118,36 @@ public class UserService {
     }
 
     public void deleteUserById(int id) {
-        findUserById(id);
+        User user = findUserById(id);
+        if (user.getEmail().equals("admin@example.com") || user.getEmail().equals("user@example.com")) {
+            throw new ResourceNotFoundException("Admin user cannot be deleted");
+        }
         this.userRepository.deleteById(id);
     }
 
     public User findUserByEmail(String email) {
-        return this.userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    public UserResponseDTO register(RegisterRequestDTO registerRequestDTO) {
+        User user = new User();
+        // check email
+        if (this.userRepository.existsByEmail(registerRequestDTO.getEmail())) {
+            throw new ResourceAlreadyExistException("Email already exists");
+        }
+        String hashedPassword = this.passwordEncoder.encode(registerRequestDTO.getPassword());
+
+        user.setPassword(hashedPassword);
+
+        user.setEmail(registerRequestDTO.getEmail());
+        user.setAddress(registerRequestDTO.getAddress());
+        user.setName(registerRequestDTO.getName());
+        user.setRole(this.roleRepository.findRoleByName("USER")
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found")));
+
+        this.userRepository.save(user);
+
+        return transformToDTO(user);
     }
 }

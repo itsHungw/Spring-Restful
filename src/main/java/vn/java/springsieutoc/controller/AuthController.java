@@ -21,10 +21,7 @@ import vn.java.springsieutoc.config.JwtService;
 import vn.java.springsieutoc.helper.ApiResponse;
 import vn.java.springsieutoc.model.RefreshToken;
 import vn.java.springsieutoc.model.User;
-import vn.java.springsieutoc.model.dto.ExchangeTokenResponse;
-import vn.java.springsieutoc.model.dto.LoginRequestDTO;
-import vn.java.springsieutoc.model.dto.LoginResponseDTO;
-import vn.java.springsieutoc.model.dto.UserResponseDTO;
+import vn.java.springsieutoc.model.dto.*;
 import vn.java.springsieutoc.service.RefreshTokenService;
 import vn.java.springsieutoc.service.UserService;
 
@@ -135,5 +132,10 @@ public class AuthController {
         ApiResponse<String> finalData = new ApiResponse<>(HttpStatus.OK, "", "ok",  "");
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookies.toString()).body(finalData); //gan them header
+    }
+
+    @PostMapping("auth/register")
+    public ResponseEntity<?> postRegister(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+        return ApiResponse.created(this.userService.register(registerRequestDTO));
     }
 }

@@ -46,6 +46,9 @@ public class PostService {
                         .build())
                         .collect(Collectors.toList()))
                 .content(post.getContent())
+                .authorName(post.getUser().getName())
+                .createdDate(post.getCreatedAt())
+                .modifiedDate(post.getUpdatedAt())
                 .build();
     }
 
