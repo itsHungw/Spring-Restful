@@ -1,6 +1,5 @@
 package vn.java.springsieutoc.model.dto;
 
-
 import lombok.*;
 
 import java.time.Instant;
@@ -26,12 +25,16 @@ public class CommentResponseDTO {
 
     private Instant updatedAt;
 
+    private String postTitle;
+
+    private String userFullName;
+
     @Builder
     @Getter
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class OutputUser{
+    public static class OutputUser {
         private int id;
         private String name;
     }
@@ -41,7 +44,7 @@ public class CommentResponseDTO {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class OutputPost{
+    public static class OutputPost {
         private Long id;
         private String title;
     }

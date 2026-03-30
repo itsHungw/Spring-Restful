@@ -14,12 +14,18 @@ package vn.java.springsieutoc.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import vn.java.springsieutoc.helper.ApiResponse;
+import vn.java.springsieutoc.helper.PageResponse;
 import vn.java.springsieutoc.model.User;
+import vn.java.springsieutoc.model.dto.UserRequestFilterDTO;
 import vn.java.springsieutoc.model.dto.UserResponseDTO;
 import vn.java.springsieutoc.service.UserService;
 
@@ -41,9 +47,13 @@ public class UserController {
 
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers(@RequestParam(required = false) String role) {
-        List<UserResponseDTO> users = this.userService.fetchUsers(role);
-        return ApiResponse.success(users, "Successfully retrieved all users");
+//    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAllUsers(
+            UserRequestFilterDTO filter,
+            Pageable pageable) {
+
+        Page<UserResponseDTO> users = this.userService.fetchUsers(pageable, filter);
+        return ApiResponse.success(PageResponse.from(users));
     }
 
     @GetMapping("/{id}")

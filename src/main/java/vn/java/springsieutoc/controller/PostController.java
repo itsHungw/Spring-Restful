@@ -1,17 +1,18 @@
 package vn.java.springsieutoc.controller;
 
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.java.springsieutoc.helper.ApiResponse;
-import vn.java.springsieutoc.model.Post;
+import vn.java.springsieutoc.helper.PageResponse;
 import vn.java.springsieutoc.model.dto.PostRequestDTO;
+import vn.java.springsieutoc.model.dto.PostRequestFilterDTO;
 import vn.java.springsieutoc.model.dto.PostResponseDTO;
 import vn.java.springsieutoc.service.PostService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
@@ -20,14 +21,14 @@ public class PostController {
 
     private final PostService postService;
 
-
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PostResponseDTO>>> getAllPosts() {
-        return ApiResponse.success(this.postService.getAllPosts(), "Get all posts successful");
+    public ResponseEntity<?> getAllPosts(Pageable pageable, PostRequestFilterDTO filter) {
+        Page<PostResponseDTO> res = this.postService.getAllPosts(pageable, filter);
+        return ApiResponse.success(PageResponse.from(res), "Get posts successful");
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PostResponseDTO>> getPostById(@PathVariable Long id){
+    public ResponseEntity<ApiResponse<PostResponseDTO>> getPostById(@PathVariable Long id) {
         return ApiResponse.success(this.postService.getPost(id), "Get post successful");
     }
 
@@ -37,7 +38,8 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PostResponseDTO>> updatePost(@PathVariable Long id, @RequestBody PostRequestDTO post) {
+    public ResponseEntity<ApiResponse<PostResponseDTO>> updatePost(@PathVariable Long id,
+            @RequestBody PostRequestDTO post) {
         return ApiResponse.success(this.postService.updatePost(post, id), "Update post successful");
     }
 
